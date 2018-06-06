@@ -40,7 +40,7 @@ class Utils {
         return fs.readFileSync(this.getPrivateKeyFilePath(domainName , userName , cryptoDir));
     }
 
-    private static getCryptoDir(cryptoDir: string): string {
+    public static getCryptoDir(cryptoDir: string): string {
         const os = require('os');
         return cryptoDir || os.homedir();
     }

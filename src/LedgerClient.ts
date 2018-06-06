@@ -162,7 +162,7 @@ class LedgerClient {
     }
 
     private async loadCerts() {
-        this.store_path = path.join(__dirname, 'hfc-key-store');
+        this.store_path = path.join(utils.Utils.getCryptoDir(this.config.cryptoconfigdir), 'hfc-key-store');
         const stateStore = await Client.newDefaultKeyValueStore({ path: this.store_path });
         this.fabricClient.setStateStore(stateStore);
         this.cryptoSuite = Client.newCryptoSuite();
