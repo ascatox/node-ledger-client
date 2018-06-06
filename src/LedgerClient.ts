@@ -16,16 +16,36 @@ class LedgerClient {
     private logger: any;
     private eventHubs: Map<string, any>;
 
-
-    constructor(config) {
-        if (!config) throw new Error('config file not found!');
-        this.fabricClient = new Client();
-        this.config = config;
-        this.loadCerts();
-        this.loadOrganizations();
-        this.eventHubs = new Map();
+    constructor() {
     }
 
+    static init(config) {
+        return (async function () {
+            let ledgerClient = new LedgerClient();
+            // Do async stuff
+            try {
+                await ledgerClient.build(config);
+            } catch (err) {
+                logger.error('Error encountered in initialization' + err);
+                console.error('Error encountered in initialization' + err);
+            }
+            // Return instance
+            return ledgerClient
+        }());
+    }
+
+    async build(config) {
+        try {
+            if (!config) throw new Error('config file not found!');
+            this.fabricClient = new Client();
+            this.config = config;
+            this.eventHubs = new Map();
+            await this.loadCerts();
+            await this.loadOrganizations();
+        } catch (err) {
+            throw new Error(err);
+        }
+    }
 
     public async doQuery(fcn: string, args: string[]) {
         if (!this.channel) {
@@ -162,13 +182,17 @@ class LedgerClient {
     }
 
     private async loadCerts() {
-        this.store_path = path.join(utils.Utils.getCryptoDir(this.config.cryptoconfigdir), 'hfc-key-store');
-        const stateStore = await Client.newDefaultKeyValueStore({ path: this.store_path });
-        this.fabricClient.setStateStore(stateStore);
-        this.cryptoSuite = Client.newCryptoSuite();
-        const cryptoKeyStore = Client.newCryptoKeyStore({ path: this.store_path });
-        this.cryptoSuite.setCryptoKeyStore(cryptoKeyStore);
-        this.fabricClient.setCryptoSuite(this.cryptoSuite);
+        try {
+            this.store_path = path.join(utils.Utils.getCryptoDir(this.config.cryptoconfigdir), 'hfc-key-store');
+            const stateStore = await Client.newDefaultKeyValueStore({ path: this.store_path });
+            this.fabricClient.setStateStore(stateStore);
+            this.cryptoSuite = Client.newCryptoSuite();
+            const cryptoKeyStore = Client.newCryptoKeyStore({ path: this.store_path });
+            this.cryptoSuite.setCryptoKeyStore(cryptoKeyStore);
+            this.fabricClient.setCryptoSuite(this.cryptoSuite);
+        } catch (err) {
+            throw new Error(err);
+        }
     }
 
     private async loadOrganizations() {
@@ -187,6 +211,7 @@ class LedgerClient {
                 skipPersistence: false,
                 isEnrolled: true
             };
+            this.loggedUser = await this.fabricClient.getUserContext(userConfig.name, true);
             if (!this.loggedUser)
                 this.loggedUser = await this.fabricClient.createUser(userOptions);
             await this.instantiateChannel(organization);
@@ -194,4 +219,11 @@ class LedgerClient {
     }
 }
 
+async function main() {
+    const config = require('../resources/config-fabric-network.json');
+    let ledgerClient = await LedgerClient.init(config);
+    // Do stuff with yql instance
+}
+
+main();
 export { LedgerClient };
