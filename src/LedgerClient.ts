@@ -19,7 +19,7 @@ class LedgerClient {
     constructor() {
     }
 
-    static init(config) {
+    public static init(config) {
         return (async function () {
             let ledgerClient = new LedgerClient();
             // Do async stuff
@@ -34,7 +34,7 @@ class LedgerClient {
         }());
     }
 
-    async build(config) {
+    private async build(config) {
         try {
             if (!config) throw new Error('config file not found!');
             this.fabricClient = new Client();
@@ -104,6 +104,10 @@ class LedgerClient {
     }
 
     public async registerChaincodeEvent(chaincodeId: string, peerName: string, eventName: string, onEvent, onError) {
+        if (!this.config) {
+            logger.error('Config not correctly received --> call init(config)');
+            throw new Error('Config not correctly received --> call init(config)');
+        }
         if (peerName) {
             const eh = this.eventHubs.get(peerName);
             if (!eh.isconnected())
@@ -114,6 +118,10 @@ class LedgerClient {
     }
 
     public async unregisterChaincodeEvent(peerName, listener_handle) {
+        if (!this.config) {
+            logger.error('Config not correctly received --> call init(config)');
+            throw new Error('Config not correctly received --> call init(config)');
+        }
         if (peerName) {
             const eh = this.eventHubs.get(peerName);
             if (eh.isconnected())
@@ -181,7 +189,6 @@ class LedgerClient {
                 this.channel.addOrderer(peer);
             }
             logger.info('instantiation finished');
-
         }
     }
 
