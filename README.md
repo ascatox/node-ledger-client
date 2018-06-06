@@ -4,7 +4,9 @@ Hyperledger client based on [Hyperledger fabric sdk node](https://fabric-sdk-nod
 
 ## Usage
 Import in your Typescript file:<br/>
-`import { LedgerClient } from 'node-ledger-client';`
+```javascript
+import { LedgerClient } from 'node-ledger-client';
+```
 
 Use with the [config-fabric-network.json](https://github.com/ascatox/node-ledger-client/blob/master/resources/config-fabric-network.json) file with this shape: <br/>
 ```javascript
