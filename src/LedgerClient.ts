@@ -106,6 +106,8 @@ class LedgerClient {
     public async registerChaincodeEvent(chaincodeId: string, peerName: string, eventName: string, onEvent, onError) {
         if (peerName) {
             const eh = this.eventHubs.get(peerName);
+            if (!eh.isconnected())
+                await eh.connect();
             return eh.registerChaincodeEvent(chaincodeId, eventName, onEvent, onError);
         } else
             logger.error('Peer name must be not empty to register events');
@@ -114,6 +116,8 @@ class LedgerClient {
     public async unregisterChaincodeEvent(peerName, listener_handle) {
         if (peerName) {
             const eh = this.eventHubs.get(peerName);
+            if (eh.isconnected())
+                await eh.disconnect();
             return eh.unregisterChaincodeEvent(listener_handle);
         } else
             logger.error('Peer name must be not empty to unregister events');
