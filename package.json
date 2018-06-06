@@ -1,7 +1,7 @@
 {
-  "name": "@ascatox/node-ledger-client",
-  "version": "1.0.0",
-  "description": "Hyperledger client for Node.js",
+  "name": "node-ledger-client",
+  "version": "1.0.1",
+  "description": "Hyperledger client based on Hyperledger fabric SDK for Node.js",
   "main": "LedgerClient.js",
   "scripts": {
     "build": "tsc",
