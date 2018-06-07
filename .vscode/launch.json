@@ -10,6 +10,10 @@
             "name": "Avvia programma",
             "program": "${workspaceFolder}/dist/LedgerClient.js",
             "preLaunchTask": "tsc: build - tsconfig.json",
+            "env": {
+                "http_proxy": "http://ascatolo:As122133@proxy.eng.it:3128",
+                "https_proxy":"http://ascatolo:As122133@proxy.eng.it:3128"
+            },
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ]

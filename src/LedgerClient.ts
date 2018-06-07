@@ -110,9 +110,10 @@ class LedgerClient {
         }
         if (peerName) {
             const eh = this.eventHubs.get(peerName);
+            const handler = await eh.registerChaincodeEvent(chaincodeId, eventName, onEvent, onError);
             if (!eh.isconnected())
                 await eh.connect();
-            return eh.registerChaincodeEvent(chaincodeId, eventName, onEvent, onError);
+            return handler;
         } else
             logger.error('Peer name must be not empty to register events');
     }
@@ -124,9 +125,10 @@ class LedgerClient {
         }
         if (peerName) {
             const eh = this.eventHubs.get(peerName);
+            const result = eh.unregisterChaincodeEvent(listener_handle);
             if (eh.isconnected())
                 await eh.disconnect();
-            return eh.unregisterChaincodeEvent(listener_handle);
+            return result;
         } else
             logger.error('Peer name must be not empty to unregister events');
     }
@@ -231,10 +233,35 @@ class LedgerClient {
 }
 
 async function main() {
+
+    async function chaincodeEventSubscribe(eventId: string, peerName: string) {
+        return ledgerClient.registerChaincodeEvent(ccid, peerName, eventId, (name, payload) => {
+            console.log('Event arrived with name: ' + name + ' and with payload ' + payload);
+        }, (err) => {
+            console.log('Errore ricevuto nell evento' + err);
+            setTimeout(() => {
+                chaincodeEventSubscribe(eventId, peerName).then((handler) => {
+                    console.log('Handler received ' + JSON.stringify(handler));
+                }, (err) => {
+                    console.error('Handler received ' + err);
+                });
+            }, 1000);
+        });
+    }
     const config = require('../resources/config-fabric-network.json');
-    let ledgerClient = await LedgerClient.init(config);
+    var peerName = 'peer0.org1.example.com';
+    var ccid = 'productunithub'
+    var eventId = "EVENT";
+    var ledgerClient = await LedgerClient.init(config);
+    var handler = null;
+    chaincodeEventSubscribe(eventId, peerName).then((handle) => {
+        console.log('Handler received ' + JSON.stringify(handle));
+        handler = handle;
+    }, (err) => {
+        console.error('Handler received ' + err);
+    });
     // Do stuff with yql instance
 }
+//main();
 
-main();
 export { LedgerClient };
