@@ -248,8 +248,8 @@ async function main() {
         });
     }
     const config = require('../resources/config-fabric-network.json');
-    var peerName = 'peer0.org1.example.com';
-    var ccid = 'analytics-chaincode'
+    var peerName = config.organizations[0].peers[0].name;
+    var ccid = config.chaincode.name;
     var eventId = "EVENT";
     var ledgerClient = await LedgerClient.init(config);
     var handler = null;
