@@ -233,7 +233,6 @@ class LedgerClient {
 }
 
 async function main() {
-
     async function chaincodeEventSubscribe(eventId: string, peerName: string) {
         return ledgerClient.registerChaincodeEvent(ccid, peerName, eventId, (name, payload) => {
             console.log('Event arrived with name: ' + name + ' and with payload ' + payload);
@@ -262,6 +261,6 @@ async function main() {
     });
     // Do stuff with yql instance
 }
-//main();
+main();
 
 export { LedgerClient };
