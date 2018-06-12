@@ -234,8 +234,8 @@ class LedgerClient {
 
 async function main() {
     async function chaincodeEventSubscribe(eventId: string, peerName: string) {
-        return ledgerClient.registerChaincodeEvent(ccid, peerName, eventId, (name, payload) => {
-            console.log('Event arrived with name: ' + name + ' and with payload ' + payload);
+        return ledgerClient.registerChaincodeEvent(ccid, peerName, eventId, (event) => {
+            console.log('Event arrived with name: ' + event.event_name + ' and with payload ' + Buffer.from(event.payload));
         }, (err) => {
             console.log('Errore ricevuto nell evento' + err);
             setTimeout(() => {
@@ -249,7 +249,7 @@ async function main() {
     }
     const config = require('../resources/config-fabric-network.json');
     var peerName = 'peer0.org1.example.com';
-    var ccid = 'productunithub'
+    var ccid = 'analytics-chaincode'
     var eventId = "EVENT";
     var ledgerClient = await LedgerClient.init(config);
     var handler = null;
@@ -261,6 +261,6 @@ async function main() {
     });
     // Do stuff with yql instance
 }
-main();
+//main();
 
 export { LedgerClient };
