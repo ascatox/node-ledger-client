@@ -12,7 +12,7 @@ Use with the [config-fabric-network.json](https://github.com/ascatox/node-ledger
 ```javascript
 const config = require('./config-fabric-network.json');
 const ledgerClient = await LedgerClient.init(config); 
-const invoke = ledgerClient.doInvoke('storeProcessStepRouting', ['test]);
+const invoke = ledgerClient.doInvoke('storeProcessStepRouting', ['test']);
 
 const peerName = config.organizations[0].peers[0].name;
 const ccid = config.chaincode.name;
