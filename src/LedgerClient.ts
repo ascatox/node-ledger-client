@@ -259,7 +259,6 @@ async function main() {
     }, (err) => {
         console.error('Handler received ' + err);
     });
-    // Do stuff with yql instance
 }
 //main();
 
