@@ -63,17 +63,17 @@ class LedgerClient {
         };
         const query_responses = await this.channel.queryByChaincode(request);
         return new Promise((resolve, reject) => {
-            logger.info("Query has completed, checking results");
+            logger.debug("Query has completed, checking results");
             if (query_responses && query_responses.length == 1) {
                 if (query_responses[0] instanceof Error) {
                     logger.error("error from query = ", query_responses[0]);
                     reject("error from query = " + query_responses[0]);
                 } else {
-                    logger.info("Response is ", query_responses[0].toString());
+                    logger.debug("Response is ", query_responses[0].toString());
                     resolve(query_responses[0].toString());
                 }
             } else {
-                logger.info("No payloads were returned from query");
+                logger.debug("No payloads were returned from query");
                 reject("No payloads were returned from query");
             }
         });
@@ -141,13 +141,13 @@ class LedgerClient {
             if (proposalResponses && proposalResponses[0].response &&
                 proposalResponses[0].response.status === 200) {
                 isProposalGood = true;
-                logger.info('Transaction proposal was good');
+                logger.debug('Transaction proposal was good');
             } else {
                 logger.error('Transaction proposal was bad: ' + proposalResponses[0].message);
                 reject('Transaction proposal was bad: ' + proposalResponses[0].message);
             }
             if (isProposalGood) {
-                logger.info(
+                logger.debug(
                     'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s"',
                     proposalResponses[0].response.status, proposalResponses[0].response.message);
 
@@ -190,7 +190,7 @@ class LedgerClient {
                 const peer = this.fabricClient.newOrderer(ordererConf.url, null);
                 this.channel.addOrderer(peer);
             }
-            logger.info('instantiation finished');
+            logger.debug('instantiation finished');
         }
     }
 
