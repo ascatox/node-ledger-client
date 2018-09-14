@@ -51,7 +51,7 @@ class Utils {
 
     private static isAdmin(user: any): boolean {
         if (user && user.roles) {
-            if (user.roles.find(role => role === 'admin'))
+            if (user.roles.find(role => role === 'admin' || role === 'Admin'))
                 return true;
         }
         return false;
