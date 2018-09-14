@@ -100,7 +100,89 @@ class LedgerClient {
         };
         const results = await this.channel.sendTransactionProposal(request, this.config.timeout);
         return await this.manageInvokeProposal(results, tx_id);
+    }
 
+    public async doInvokeWithTxId(fcn: string, args: string[]) {
+        if (!this.channel) {
+            logger.error('Channel not correctly initialized --> call instantiateChanel');
+            throw new Error('Channel not correctly initialized --> call instantiateChanel');
+        }
+        // get a transaction id object based on the current user assigned to fabric client
+        const tx_id = await this.fabricClient.newTransactionID();
+        var request = {
+            //targets: let default to the peer assigned to the client
+            chaincodeId: this.config.chaincode.name,
+            chaincodePath: this.config.chaincode.path,
+            chaincodeVersion: this.config.chaincode.version,
+            chaincodeLang: this.config.chaincode.lang,
+            fcn: fcn,
+            args: args,
+            chainId: this.config.channelName,
+            txId: tx_id
+        };
+        const results = await this.channel.sendTransactionProposal(request, this.config.timeout);
+        const result = await this.manageInvokeProposal(results, tx_id);
+        return { tx_id: tx_id, result: result };
+    }
+
+    public async registerTxEvent(peerName: string, txId: string, onEvent, onError) {
+        if (!this.config) {
+            logger.error('Config not correctly received --> call init(config)');
+            throw new Error('Config not correctly received --> call init(config)');
+        }
+        if (peerName) {
+            const eh = this.eventHubs.get(peerName);
+            const handler = await eh.registerTxEvent(txId, onEvent, onError);
+            if (!eh.isconnected())
+                await eh.connect();
+            return handler;
+        } else
+            logger.error('Peer name must be not empty to register transactions');
+    }
+
+    public async unregisterTxEvent(peerName, listener_handle) {
+        if (!this.config) {
+            logger.error('Config not correctly received --> call init(config)');
+            throw new Error('Config not correctly received --> call init(config)');
+        }
+        if (peerName) {
+            const eh = this.eventHubs.get(peerName);
+            const result = eh.unregisterTxEvent(listener_handle);
+            if (eh.isconnected())
+                await eh.disconnect();
+            return result;
+        } else
+            logger.error('Peer name must be not empty to unregister transactions');
+    }
+
+    public async registerBlockEvent(peerName: string, block_registration_number: number, onEvent, onError) {
+        if (!this.config) {
+            logger.error('Config not correctly received --> call init(config)');
+            throw new Error('Config not correctly received --> call init(config)');
+        }
+        if (peerName) {
+            const eh = this.eventHubs.get(peerName);
+            const handler = await eh.registerBlockEvent(block_registration_number, onEvent, onError);
+            if (!eh.isconnected())
+                await eh.connect();
+            return handler;
+        } else
+            logger.error('Peer name must be not empty to register block events');
+    }
+
+    public async unregisterBlockEvent(peerName, listener_handle) {
+        if (!this.config) {
+            logger.error('Config not correctly received --> call init(config)');
+            throw new Error('Config not correctly received --> call init(config)');
+        }
+        if (peerName) {
+            const eh = this.eventHubs.get(peerName);
+            const result = eh.unregisterBlockEvent(listener_handle);
+            if (eh.isconnected())
+                await eh.disconnect();
+            return result;
+        } else
+            logger.error('Peer name must be not empty to unregister block events');
     }
 
     public async registerChaincodeEvent(chaincodeId: string, peerName: string, eventName: string, onEvent, onError) {
@@ -211,11 +293,11 @@ class LedgerClient {
     private async loadOrganizations() {
         for (const organization of this.config.organizations) {
             const userConfig = organization.users[0]; //Take only the first one
-            const privateKeyPath = utils.Utils.getPrivateKeyFilePath(organization.domainName, userConfig.name, this.config.cryptoconfigdir);
+            const privateKeyPath = utils.Utils.getPrivateKeyFilePath(organization.domainName, userConfig, this.config.cryptoconfigdir);
 
             const cryptoContent = {
                 privateKey: privateKeyPath,
-                signedCert: utils.Utils.getCertPath(organization.domainName, userConfig.name, this.config.cryptoconfigdir)
+                signedCert: utils.Utils.getCertPath(organization.domainName, userConfig, this.config.cryptoconfigdir)
             };
             const userOptions = {
                 username: userConfig.name,
