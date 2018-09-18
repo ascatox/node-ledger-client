@@ -225,8 +225,13 @@ class LedgerClient {
                 isProposalGood = true;
                 logger.debug('Transaction proposal was good');
             } else {
-                logger.error('Transaction proposal was bad: ' + proposalResponses[0].response.message);
-                reject('Transaction proposal was bad: ' + proposalResponses[0].response.message);
+                let rejectionMsg = '';
+                if (proposalResponses[0].message)
+                    rejectionMsg += proposalResponses[0].message;
+                else if (proposalResponses[0].response.message)
+                    rejectionMsg += proposalResponses[0].response.message;
+                logger.error('Transaction proposal was bad: ' + rejectionMsg);
+                reject('Transaction proposal was bad: ' + rejectionMsg);
             }
             if (isProposalGood) {
                 logger.debug(
