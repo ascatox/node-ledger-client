@@ -8,7 +8,29 @@ Import in your Typescript file:<br/>
 import { LedgerClient } from 'node-ledger-client';
 ```
 
-Use with the [config-fabric-network.json](https://github.com/ascatox/node-ledger-client/blob/master/resources/config-fabric-network.json) file with this shape: <br/>
+Now you can view a 3 functions to working with chaincode: <br>
+  1. ```async doInvoke(fcn: string, args: string[])```
+  2. ```async doQuery(fcn: string, args: string[])``` 
+  3. ```async registerChaincodeEvent(chaincodeId: string, peerName: string, eventName: string, onEvent, onError)```
+  
+### async doInvoke
+The Invoke method is invoked whenever the state of the blockchain is queried or modified. <br
+   
+This method needs **two** arguments, the **first** is the name of the function we want to invoke in the chaincode. The **second** is the array of args that we want to pass to the chaincode function. <br>
+**doInvoke** returns a Promise. <br>
+**Example** <br>
+`const payload  = await ledgerClient.doInvoke(fcn , args);` <br>
+
+
+### async doQuery
+A chaincode query is somewhat simpler to implement as it involves the entire network, but simply requires communication from client to peer. <br>
+   
+It is the same seen just before.<br>
+**Example** <br>
+`const payload = await ledgerClient.doQuery(fcn , args);` <br>
+
+### async registerChaincodeEvent
+
 ```javascript
 const config = require('./config-fabric-network.json');
 const ledgerClient = await LedgerClient.init(config); 
@@ -42,3 +64,10 @@ async function main() {
 }
 main();
 ```
+
+**Watch out!!!** The string *eventName* must be the same as the event created in the chaincode!!!
+ 
+ 
+
+
+    
