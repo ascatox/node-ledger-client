@@ -38,7 +38,7 @@ const invoke = ledgerClient.doInvoke('storeProcessStepRouting', ['test']);
 
 const peerName = config.organizations[0].peers[0].name;
 const ccid = config.chaincode.name;
-const eventId = "EVENT";
+const eventId = "EVENT"; //eventName
 let handler = null;
 async function main() {
     async function chaincodeEventSubscribe(eventId: string, peerName: string) {
