@@ -3,6 +3,7 @@ import Client = require('fabric-client');
 import FabricCAServices = require('fabric-ca-client');
 import * as path from 'path';
 import { logger } from "./Logger";
+import { EventListener } from "./EventListener";
 
 class LedgerClient {
 
@@ -14,7 +15,9 @@ class LedgerClient {
     private loggedUser: any;
     private store_path: string;
     private logger: any;
-    private eventHubs: Map<string, any>;
+    //private eventHubs: Map<string, any>;
+    private peers: Map<string, any>;
+    private eventListener: EventListener;
 
     constructor() {
     }
@@ -39,9 +42,9 @@ class LedgerClient {
             if (!config) throw new Error('config file not found!');
             this.fabricClient = new Client();
             this.config = config;
-            this.eventHubs = new Map();
             await this.loadCerts();
             await this.loadOrganizations();
+            this.eventListener = new EventListener(config, this.channel, this.peers);
         } catch (err) {
             throw new Error(err);
         }
@@ -125,94 +128,51 @@ class LedgerClient {
         return { tx_id: tx_id, result: result };
     }
 
-    public async registerTxEvent(peerName: string, txId: string, onEvent, onError) {
-        if (!this.config) {
-            logger.error('Config not correctly received --> call init(config)');
-            throw new Error('Config not correctly received --> call init(config)');
-        }
-        if (peerName) {
-            const eh = this.eventHubs.get(peerName);
-            const handler = await eh.registerTxEvent(txId, onEvent, onError);
-            if (!eh.isconnected())
-                await eh.connect();
-            return handler;
-        } else
-            logger.error('Peer name must be not empty to register transactions');
+    public registerTxEvent(peerName: string, txId: string, onEvent, onError) {
+        return this.eventListener.registerTxEvent(peerName, txId, onEvent, onError);
+    }
+    public registerAllPeersTxEvent(txId: string, onEvent, onError) {
+        return this.eventListener.registerTxEvent(null, txId, onEvent, onError);
     }
 
-    public async unregisterTxEvent(peerName, listener_handle) {
-        if (!this.config) {
-            logger.error('Config not correctly received --> call init(config)');
-            throw new Error('Config not correctly received --> call init(config)');
-        }
-        if (peerName) {
-            const eh = this.eventHubs.get(peerName);
-            const result = eh.unregisterTxEvent(listener_handle);
-            if (eh.isconnected())
-                await eh.disconnect();
-            return result;
-        } else
-            logger.error('Peer name must be not empty to unregister transactions');
+    public unregisterTxEvent(peerName: string, listener_handle: string) {
+        return this.eventListener.unregisterTxEvent(peerName, [listener_handle]);
     }
 
-    public async registerBlockEvent(peerName: string, block_registration_number: number, onEvent, onError) {
-        if (!this.config) {
-            logger.error('Config not correctly received --> call init(config)');
-            throw new Error('Config not correctly received --> call init(config)');
-        }
-        if (peerName) {
-            const eh = this.eventHubs.get(peerName);
-            const handler = await eh.registerBlockEvent(block_registration_number, onEvent, onError);
-            if (!eh.isconnected())
-                await eh.connect();
-            return handler;
-        } else
-            logger.error('Peer name must be not empty to register block events');
+    public unregisterAllPeersTxEvent(listener_handles: string[]) {
+        return this.eventListener.unregisterTxEvent(null, listener_handles);
     }
 
-    public async unregisterBlockEvent(peerName, listener_handle) {
-        if (!this.config) {
-            logger.error('Config not correctly received --> call init(config)');
-            throw new Error('Config not correctly received --> call init(config)');
-        }
-        if (peerName) {
-            const eh = this.eventHubs.get(peerName);
-            const result = eh.unregisterBlockEvent(listener_handle);
-            if (eh.isconnected())
-                await eh.disconnect();
-            return result;
-        } else
-            logger.error('Peer name must be not empty to unregister block events');
+    public registerBlockEvent(peerName: string, block_registration_number: number, onEvent, onError) {
+        return this.eventListener.registerBlockEvent(peerName, block_registration_number, onEvent, onError);
     }
 
-    public async registerChaincodeEvent(chaincodeId: string, peerName: string, eventName: string, onEvent, onError) {
-        if (!this.config) {
-            logger.error('Config not correctly received --> call init(config)');
-            throw new Error('Config not correctly received --> call init(config)');
-        }
-        if (peerName) {
-            const eh = this.eventHubs.get(peerName);
-            const handler = await eh.registerChaincodeEvent(chaincodeId, eventName, onEvent, onError);
-            if (!eh.isconnected())
-                await eh.connect();
-            return handler;
-        } else
-            logger.error('Peer name must be not empty to register events');
+    public registerAllPeersBlockEvent(block_registration_number: number, onEvent, onError) {
+        return this.eventListener.registerBlockEvent(null, block_registration_number, onEvent, onError);
     }
 
-    public async unregisterChaincodeEvent(peerName, listener_handle) {
-        if (!this.config) {
-            logger.error('Config not correctly received --> call init(config)');
-            throw new Error('Config not correctly received --> call init(config)');
-        }
-        if (peerName) {
-            const eh = this.eventHubs.get(peerName);
-            const result = eh.unregisterChaincodeEvent(listener_handle);
-            if (eh.isconnected())
-                await eh.disconnect();
-            return result;
-        } else
-            logger.error('Peer name must be not empty to unregister events');
+    public unregisterBlockEvent(peerName: string, listener_handle: string) {
+        return this.eventListener.unregisterBlockEvent(peerName, [listener_handle]);
+    }
+
+    public unregisterAllPeersBlockEvent(peerName: string, listener_handles: string[]) {
+        return this.eventListener.unregisterBlockEvent(null, listener_handles);
+    }
+
+    public registerChaincodeEvent(chaincodeId: string, peerName: string, eventName: string, onEvent, onError) {
+        return this.eventListener.registerChaincodeEvent(chaincodeId, peerName, eventName, onEvent, onError);
+    }
+
+    public registerAllPeersChaincodeEvent(chaincodeId: string, eventName: string, onEvent, onError) {
+        return this.eventListener.registerChaincodeEvent(chaincodeId, null, eventName, onEvent, onError);
+    }
+
+    public unregisterChaincodeEvent(peerName: string, listener_handle: string) {
+        return this.eventListener.unregisterChaincodeEvent(peerName, [listener_handle]);
+    }
+
+    public unregisterAllPeersChaincodeEvent(listener_handles: string[]) {
+        return this.eventListener.unregisterChaincodeEvent(null, listener_handles);
     }
 
     private async manageInvokeProposal(results, tx_id) {
@@ -261,17 +221,16 @@ class LedgerClient {
     }
 
     private async instantiateChannel(organization) {
-        //client.loadFromConfig(jsonFile);
         if (this.config) {
             this.channel = this.fabricClient.newChannel(this.config.channelName);
-            let eh = this.fabricClient.newEventHub();
+            this.peers = new Map();
             for (const peerConf of organization.peers) {
                 const peer = this.fabricClient.newPeer(peerConf.requestURL, null);
                 this.channel.addPeer(peer);
-                if (peerConf.eventURL) {
-                    eh.setPeerAddr(peerConf.eventURL, null);
-                    this.eventHubs.set(peerConf.name, eh);
-                }
+                this.peers.set(peerConf.name, peer);
+                /*if (peerConf.eventURL) {
+                    this.eventListener.addPeerChannelEvent(peerConf.name);
+                }*/
             }
             for (const ordererConf of organization.orderers) {
                 const peer = this.fabricClient.newOrderer(ordererConf.url, null);
@@ -297,7 +256,7 @@ class LedgerClient {
 
     private async loadOrganizations() {
         for (const organization of this.config.organizations) {
-            const userConfig = organization.users[0]; //Take only the first one
+            const userConfig = organization.users[0]; //Take only the first one TODO
             const privateKeyPath = utils.Utils.getPrivateKeyFilePath(organization.domainName, userConfig, this.config.cryptoconfigdir);
 
             const cryptoContent = {

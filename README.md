@@ -1,6 +1,6 @@
 # node-ledger-client
 
-Hyperledger client based on [Hyperledger fabric sdk node](https://fabric-sdk-node.github.io/)
+Hyperledger client based on [Hyperledger fabric sdk node](https://fabric-sdk-node.github.io/) now supports *version 1.3* of Hyperledger Fabric.
 
 ## Usage
 Import in your Typescript file:<br/>
