@@ -105,6 +105,7 @@ class LedgerClient {
         return await this.manageInvokeProposal(results, tx_id);
     }
 
+   /*
     public async doInvokeWithTxId(fcn: string, args: string[]) {
         if (!this.channel) {
             logger.error('Channel not correctly initialized --> call instantiateChanel');
@@ -127,6 +128,7 @@ class LedgerClient {
         const result = await this.manageInvokeProposal(results, tx_id);
         return { tx_id: tx_id, result: result };
     }
+    */
 
     public registerTxEvent(peerName: string, txId: string, onEvent, onError) {
         return this.eventListener.registerTxEvent(peerName, txId, onEvent, onError);
